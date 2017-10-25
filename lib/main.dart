@@ -28,9 +28,9 @@ class ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   final random = new Random();
   int dataSet = 50;
   AnimationController animation;
-  double startHeight;   // Strike one.
+  double startHeight; // Strike one.
   double currentHeight; // Strike two.
-  double endHeight;     // Strike three. Refactor.
+  double endHeight; // Strike three. Refactor.
 
   @override
   void initState() {
@@ -48,7 +48,7 @@ class ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           );
         });
       });
-    startHeight = 0.0;                // Strike two.
+    startHeight = 0.0; // Strike two.
     currentHeight = 0.0;
     endHeight = dataSet.toDouble();
     animation.forward();
@@ -62,7 +62,7 @@ class ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
 
   void changeData() {
     setState(() {
-      startHeight = currentHeight;    // Strike three. Refactor.
+      startHeight = currentHeight; // Strike three. Refactor.
       dataSet = random.nextInt(100);
       endHeight = dataSet.toDouble();
       animation.forward(from: 0.0);
@@ -72,26 +72,19 @@ class ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new Container(
-        padding: new EdgeInsets.fromLTRB(200.0, 50.0, 50.0, 50.0),
-        alignment: FractionalOffset.bottomLeft,
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children:  [
-            new CustomPaint(
-                size: new Size(200.0, 100.0),
-                painter: new BarChartPainter(currentHeight)
-          )],
-          ),
-    /*    child: new CustomPaint(
-          size: new Size(200.0, 100.0),
-          painter: new BarChartPainter(currentHeight),
-        ),*/
-      ),
-      floatingActionButton: new FloatingActionButton(
-        child: new Icon(Icons.refresh),
-        onPressed: changeData,
-      ),
+      body:
+         new GestureDetector(
+            onTap: () {
+              debugPrint("hello");
+            },
+            child:
+                new Container(
+                    alignment: FractionalOffset.center,
+                    child: new CustomPaint(
+
+                         size: new Size(400.0, 400.0),
+                         painter: new BarChartPainter(currentHeight),
+        ))),
     );
   }
 }
@@ -103,16 +96,52 @@ class BarChartPainter extends CustomPainter {
 
   final double barHeight;
 
+  double _getRelativeValue(double iData, double maxData, double sizewidth) {
+   // double xPadding = 50.0;
+   // double yPadding = 30.0;
+    //double relValue = iData;
+
+    double relValue = iData / maxData * sizewidth;
+
+   /* if (isX) {
+      relValue = iData / maxData * size.width;
+      //x-value
+      double contentStart = 0 + padding;
+      double contentEnd = size.width - padding;
+
+      if (relValue > contentStart) {
+        relValue += padding;
+      }
+      else if (relValue > contentEnd){
+        relValue -= padding;
+      }
+    }
+    else {
+      //y value
+      relValue = iData / maxData * size.height;
+      double yContentStart = 0 - padding;
+      double yContentEnd = size.height - padding;
+    }*/
+    return relValue;
+  }
+
+  //formula for getting yRelPoint
+  double _getYRelPoint(double h, double yi, double ymax) {
+    var yiRel = yi / ymax * h;
+    var yRel =  h - yiRel;
+    return yRel;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
+    //canvas
     final paint = new Paint()
       ..color = Colors.blue[400]
       ..strokeWidth = 5.0
       ..strokeCap = StrokeCap.round
        ..style = PaintingStyle.fill;
 
-    double h = size.height;
-    debugPrint("size.height $h, barheight: $barHeight");
+
 /*
     canvas.drawRect(new Rect.fromLTWH(0.0, 20.0, 30.0, 80.0), paint);
 */
@@ -123,14 +152,26 @@ class BarChartPainter extends CustomPainter {
    /* var pointListof = [new Offset(51.0, -50.0), new Offset(100.0, -100.0), new Offset(100.0, -100.0), new Offset(150.0, -50.0),
             new Offset(150.0, -50.0), new Offset(200.0, -100.0)];*/
 
+    /*double xmax = -100.0;
     var pointList = new Float32List.fromList(
-        [
+        [  _getRelativeValue(50.0, xmax, size.width), _getRelativeValue(-50.0, xmax, size.width),
           50.0, -50.0,
         100.0, -100.0,
         100.0, -100.0,
         150.0, -50.0,
         150.0, -50.0,
-        200.0, -100.0]);
+        200.0, -100.0]);*/
+
+    double xmax = 200.0;
+    double ymax = 100.0;
+    var pointList = new Float32List.fromList(
+        [_getRelativeValue(50.0, xmax, size.width), _getYRelPoint(size.height, 50.0, 100.0),
+        _getRelativeValue(100.0, xmax, size.width), _getYRelPoint(size.height, 100.0, 100.0),
+        _getRelativeValue(100.0, xmax, size.width), _getYRelPoint(size.height, 100.0, 100.0),
+        _getRelativeValue(150.0, xmax, size.width), _getYRelPoint(size.height, 50.0, 100.0),
+        _getRelativeValue(150.0, xmax, size.width), _getYRelPoint(size.height, 50.0, 100.0),
+        _getRelativeValue(200.0, xmax, size.width), _getYRelPoint(size.height, 100.0, 100.0)
+        ]);
     canvas.drawRawPoints(PointMode.lines,  pointList, paint);
 
     final paint2 = new Paint()
@@ -152,14 +193,19 @@ class BarChartPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.fill;
 
-    canvas.drawRawPoints(PointMode.lines, pointList2, paintAx);
+    //canvas.drawRawPoints(PointMode.lines, pointList2, paintAx);
 
     //draw axes
     //x axis
-    canvas.drawLine(new Offset(0.0, 0.0), new Offset(500.0, 0.0), paintAx);
+    var xaxispoints = new Float32List.fromList(
+      [ 0.0, 50.0, 500.0, 50.0]
+    );
+
+    canvas.drawRawPoints(PointMode.lines, xaxispoints, paintAx);
+    //canvas.drawLine(new Offset(0.0, 0.0), new Offset(500.0, 0.0), paintAx);
 
     //y axis
-    canvas.drawLine(new Offset(0.0, 0.0), new Offset(0.0, -500.0), paintAx);
+    //canvas.drawLine(new Offset(0.0, 0.0), new Offset(0.0, -500.0), paintAx);
 
     //scales on x-axis
     double xLen = 10.0;
@@ -192,7 +238,8 @@ class BarChartPainter extends CustomPainter {
       textAlign: TextAlign.left
     );
     tp2.layout();
-    tp2.paint(canvas, new Offset(-100.0, -250.0));
+    tp2.paint(canvas, new Offset(-150.0, -0.0));
+
 
 
     //
