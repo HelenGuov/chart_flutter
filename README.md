@@ -1,4 +1,4 @@
-# chart_flutter github
+# chart_flutter
 
 A new Flutter project.
 
